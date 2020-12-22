@@ -117,7 +117,7 @@
                     </label>
                 </td>
                 <td>
-                    <label class="container">Daily Change
+                    <label class="container">Daily Deaths
                         <input onclick="updateChart()" id="checkbox_6" type="checkbox" checked="checked">
                         <span class="checkmark"></span>
                     </label>
@@ -131,7 +131,10 @@
                     </label>
                 </td>
                 <td>
-
+                    <label class="container">Daily Change
+                        <input onclick="updateChart()" id="checkbox_7" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
                 </td>
             </tr>
         </table>
@@ -184,6 +187,7 @@
         var deaths = [];
         var newCases = [];
         var newRecovered = [];
+        var newDeaths = [];
         var change = [];
 
         var allthedata = [];
@@ -200,6 +204,7 @@
         document.getElementById("checkbox_4").checked = true;
         document.getElementById("checkbox_5").checked = true;
         document.getElementById("checkbox_6").checked = true;
+        document.getElementById("checkbox_7").checked = true;
 
         updateChart();
         
@@ -249,6 +254,7 @@
                 deaths = [];
                 newCases = [];
                 newRecovered = [];
+                newDeaths = [];
                 change = [];
 
                 for(var i = 0; i < data.length; i++){
@@ -259,6 +265,7 @@
                     deaths.push(data[i].Deaths);
                     newCases.push((i > 0) ? (data[i].Confirmed - data[i - 1].Confirmed) : 0);
                     newRecovered.push((i > 0) ? (data[i].Recovered - data[i - 1].Recovered) : 0);
+                    newDeaths.push((i > 0) ? (data[i].Deaths - data[i - 1].Deaths) : 0);
                     change.push((i > 0) ? (data[i].Active - data[i - 1].Active) : 0);
                 }
 
@@ -271,12 +278,13 @@
                 allthedata.push({label:'Deaths', backgroundColor:'rgb(50, 50, 50)', borderColor: 'rgb(50, 50, 50)', data: deaths, fill: false});
                 allthedata.push({label:'Daily new Cases', backgroundColor:'rgb(255, 99, 132)', borderColor: 'rgb(255, 99, 132)', data: newCases, fill: false});
                 allthedata.push({label:'Daily Recovered', backgroundColor:'rgb(99, 255, 132)', borderColor: 'rgb(99, 255, 132)', data: newRecovered, fill: false});
+                allthedata.push({label:'Daily Deaths', backgroundColor:'rgb(50, 50, 50)', borderColor: 'rgb(50, 50, 50)', data: newDeaths, fill: false});
                 allthedata.push({label:'Daily Change', backgroundColor:'rgb(99, 132, 255)', borderColor: 'rgb(99, 132, 255)', data: change, fill: false});
             
                 chart.data.labels = allthedata[0];
                 chart.data.datasets = [];
 
-                for(var i = 0; i < 7; i++){
+                for(var i = 0; i < 8; i++){
                     if(document.getElementById("checkbox_" + i).checked == true){
                         chart.data.datasets.push(allthedata[i+1]);
                     }

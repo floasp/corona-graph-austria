@@ -1,0 +1,291 @@
+<html>
+    <head>
+        <title>Corona Graph Austria</title>
+        <!-- Corona Number Graph for Austria -->
+
+        <!-- using these third party libraries: -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        
+         <!-- styleshits -->
+        <style>
+            .button {
+                background-color: #888888;
+                border: none;
+                color: black;
+                padding: 15px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 16px;
+                margin: 4px 2px;
+                cursor: pointer;
+                border-radius: 5px;
+                box-shadow: 2px 2px black;
+            }
+            .container {
+                display: block;
+                position: relative;
+                padding-left: 35px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                font-size: 22px;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                color: #888888;
+                font-family: sans-serif;
+            }
+            .container input {
+                position: absolute;
+                opacity: 0;
+                cursor: pointer;
+                height: 0;
+                width: 0;
+            }
+            .checkmark {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 25px;
+                width: 25px;
+                background-color: #eee;
+            }
+            .container:hover input ~ .checkmark {
+                background-color: #ccc; 
+            }
+            .container input:checked ~ .checkmark {
+                background-color: #555555;
+            }
+            .checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+            }
+            .container input:checked ~ .checkmark:after {
+                display: block;
+            }
+            .container .checkmark:after {
+                left: 9px;
+                top: 5px;
+                width: 5px;
+                height: 10px;
+                border: solid white;
+                border-width: 0 3px 3px 0;
+                -webkit-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                transform: rotate(45deg);
+            }
+        </style>
+    </head>
+    <body style="background-color:#101010">
+        <table style="width:30%">
+            <tr>
+                <td>
+                    <label class="container">Confirmed
+                        <input onclick="updateChart()" id="checkbox_0" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+                <td>
+                    <label class="container">Daily new Cases
+                        <input onclick="updateChart()" id="checkbox_4" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="container">Recovered
+                        <input onclick="updateChart()" id="checkbox_1" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+                <td>
+                    <label class="container">Daily Recovered
+                        <input onclick="updateChart()" id="checkbox_5" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="container">Active
+                        <input onclick="updateChart()" id="checkbox_2" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+                <td>
+                    <label class="container">Daily Change
+                        <input onclick="updateChart()" id="checkbox_6" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="container">Deaths
+                        <input onclick="updateChart()" id="checkbox_3" type="checkbox" checked="checked">
+                        <span class="checkmark"></span>
+                    </label>
+                </td>
+                <td>
+
+                </td>
+            </tr>
+        </table>
+        <!--
+        <label class="container">Confirmed
+            <input id="checkbox_0" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Recovered
+            <input id="checkbox_1" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Active
+            <input id="checkbox_2" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Deaths
+            <input id="checkbox_3" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Daily new Cases
+            <input id="checkbox_4" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Daily Recovered
+            <input id="checkbox_5" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        <label class="container">Daily Change
+            <input id="checkbox_6" type="checkbox" checked="checked">
+            <span class="checkmark"></span>
+        </label>
+        -->
+
+        <div>
+            <button class="button" onclick="updateChart()">Update Chart</button>
+        </div>
+
+        <div id="div-chart-daily" style="width:90%;">
+            <canvas id="chartDaily"></canvas>
+        </div>
+
+        <script>
+        var ctx = document.getElementById('chartDaily').getContext('2d');
+        
+        var dates = [];
+        var confirmed = [];
+        var recovered = [];
+        var active = [];
+        var deaths = [];
+        var newCases = [];
+        var newRecovered = [];
+        var change = [];
+
+        var allthedata = [];
+        
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1; //january is 0, thank you javascript
+        var day = date.getDate();
+
+        document.getElementById("checkbox_0").checked = false;
+        document.getElementById("checkbox_1").checked = false;
+        document.getElementById("checkbox_2").checked = false;
+        document.getElementById("checkbox_3").checked = false;
+        document.getElementById("checkbox_4").checked = true;
+        document.getElementById("checkbox_5").checked = true;
+        document.getElementById("checkbox_6").checked = true;
+
+        updateChart();
+        
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'daily new cases',
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: newCases,
+                    fill: false
+                },
+                {
+                    label: 'daily new recovered',
+                    backgroundColor: 'rgb(99, 255, 132)',
+                    borderColor: 'rgb(99, 255, 132)',
+                    data: newRecovered,
+                    fill: false
+                },
+                {
+                    label: 'daily change',
+                    backgroundColor: 'rgb(99, 132, 255)',
+                    borderColor: 'rgb(99, 132, 255)',
+                    data: change,
+                    fill: false
+                }]
+            },
+        
+            options: {}
+        });
+
+        function updateChart() {
+            
+            date = new Date();
+            year = date.getFullYear();
+            month = date.getMonth() + 1; //january is 0, thank you javascript
+            day = date.getDate();
+            
+            $.getJSON('https://api.covid19api.com/country/austria?from=2020-03-01T00:00:00Z&to=' + year + '-' + ("0" + month).slice(-2) + '-' + ("0" + day).slice(-2) + 'T00:00:00Z', function(data) {
+            
+                dates = [];
+                confirmed = [];
+                recovered = [];
+                active = [];
+                deaths = [];
+                newCases = [];
+                newRecovered = [];
+                change = [];
+
+                for(var i = 0; i < data.length; i++){
+                    dates.push(data[i].Date.split('T')[0]);
+                    confirmed.push(data[i].Confirmed);
+                    recovered.push(data[i].Recovered);
+                    active.push(data[i].Active);
+                    deaths.push(data[i].Deaths);
+                    newCases.push((i > 0) ? (data[i].Confirmed - data[i - 1].Confirmed) : 0);
+                    newRecovered.push((i > 0) ? (data[i].Recovered - data[i - 1].Recovered) : 0);
+                    change.push((i > 0) ? (data[i].Active - data[i - 1].Active) : 0);
+                }
+
+                allthedata = [];
+
+                allthedata.push(dates);
+                allthedata.push({label:'Confirmed Cases', backgroundColor:'rgb(255, 255, 132)', borderColor: 'rgb(255, 255, 132)', data: confirmed, fill: false});
+                allthedata.push({label:'Recovered Cases', backgroundColor:'rgb(99, 255, 132)', borderColor: 'rgb(99, 255, 132)', data: recovered, fill: false});
+                allthedata.push({label:'Active Cases', backgroundColor:'rgb(255, 99, 132)', borderColor: 'rgb(255, 99, 132)', data: active, fill: false});
+                allthedata.push({label:'Deaths', backgroundColor:'rgb(50, 50, 50)', borderColor: 'rgb(50, 50, 50)', data: deaths, fill: false});
+                allthedata.push({label:'Daily new Cases', backgroundColor:'rgb(255, 99, 132)', borderColor: 'rgb(255, 99, 132)', data: newCases, fill: false});
+                allthedata.push({label:'Daily Recovered', backgroundColor:'rgb(99, 255, 132)', borderColor: 'rgb(99, 255, 132)', data: newRecovered, fill: false});
+                allthedata.push({label:'Daily Change', backgroundColor:'rgb(99, 132, 255)', borderColor: 'rgb(99, 132, 255)', data: change, fill: false});
+            
+                chart.data.labels = allthedata[0];
+                chart.data.datasets = [];
+
+                for(var i = 0; i < 7; i++){
+                    if(document.getElementById("checkbox_" + i).checked == true){
+                        chart.data.datasets.push(allthedata[i+1]);
+                    }
+                }
+
+
+                chart.update();
+            });
+        }
+        </script>
+    </body>
+</html>
